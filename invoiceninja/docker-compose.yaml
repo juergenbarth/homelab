@@ -1,0 +1,78 @@
+services:
+  in-server:
+    image: nginx
+    container_name: invoiceninja-nginx-prod-1
+    restart: always
+    volumes:
+      # Wichtig! Hier die in-vhost.conf von oben einbinden.
+      - /data/docker/invoiceninja/config/in-vhost.conf:/etc/nginx/conf.d/in-vhost.conf:ro
+      - /data/docker/invoiceninja/public:/var/www/app/public:ro
+    depends_on:
+      - in-app
+    # Run webserver nginx on port 80
+    # ports:
+    #   - 10000:80
+    healthcheck:
+      test: curl -f http://localhost:80/ || exit 1
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.invoiceninja-prod-1-http.entrypoints=web
+      - traefik.http.routers.invoiceninja-prod-1-http.rule=Host(`invoiceninja.navigio.io`)
+      - traefik.http.routers.invoiceninja-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.invoiceninja-prod-1-https.rule=Host(`invoiceninja.navigio.io`)
+      - traefik.http.routers.invoiceninja-prod-1-https.tls=true
+      - traefik.http.routers.invoiceninja-prod-1-https.tls.certresolver=route53
+    networks:
+      - frontend
+      - backend
+
+  in-cache:
+    image: redis
+    container_name: invoiceninja-redis-prod-1
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping || exit 1
+    networks:
+      - backend
+
+  in-db:
+    image: mariadb:10.4
+    container_name: invoiceninja-mariadb-prod-1
+    restart: always
+    volumes:
+      - /data/docker/invoiceninja/data:/var/lib/mysql:rw,delegated
+    environment:
+      # Passwort anpassen!! Änderungen müssen unten auch angepasst werden.
+      MARIADB_PASSWORD: ninja
+      MARIADB_ROOT_PASSWORD: ninja
+      MARIADB_DATABASE: ninja
+      MARIADB_USER: ninja
+      PUID: 1026
+      PGID: 100
+    networks:
+      - backend
+      
+  in-app:
+    image: invoiceninja/invoiceninja:latest
+    container_name: invoiceninja-app-prod-1
+    restart: always
+    volumes:
+      - /data/docker/invoiceninja/public:/var/www/app/public:rw,delegated
+      - /data/docker/invoiceninja/storage:/var/www/app/storage:rw,delegated
+      - /data/docker/invoiceninja/mod/Account.php:/var/www/app/app/Models/Account.php:ro
+    depends_on:
+      in-db:
+        condition: service_started
+      in-cache:
+        condition: service_healthy
+    env_file: .env
+    networks:
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
