@@ -1,0 +1,97 @@
+services:
+  postgresql:
+    image: docker.io/library/postgres:16-alpine
+    container_name: authentik-postgres-prod-1
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - /data/docker/authentik/database:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - backend
+
+  redis:
+    image: docker.io/library/redis:alpine
+    container_name: authentik-redis-prod-1
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - redis-cli ping | grep PONG
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - /data/docker/authentik/redis:/data
+    networks:
+      - backend
+
+  server:
+    image: ghcr.io/goauthentik/server:2024.2.2
+    container_name: authentik-server-prod-1
+    restart: unless-stopped
+    command: server
+    volumes:
+      - /data/docker/authentik/media:/media
+      - /data/docker/authentik/custom-templates:/templates
+    env_file:
+      - .env
+    # Not needed when using macvlan or traefik
+    # ports:
+    #   - 12900:9000
+    #   - 12943:9443
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authentik-prod-1-http.entrypoints=web
+      - traefik.http.routers.authentik-prod-1-http.rule=Host(`authentik.navigio.io`)
+      - traefik.http.routers.authentik-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.authentik-prod-1-https.rule=Host(`authentik.navigio.io`)
+      - traefik.http.routers.authentik-prod-1-https.tls=true
+      - traefik.http.routers.authentik-prod-1-https.tls.certresolver=route53
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - frontend
+      - backend
+
+  worker:
+    image: ghcr.io/goauthentik/server:2024.2.2
+    container_name: authentik-worker-prod-1
+    restart: unless-stopped
+    command: worker
+    # `user: root` and the docker socket volume are optional.
+    # See more for the docker socket integration here:
+    # https://goauthentik.io/docs/outposts/integrations/docker
+    # Removing `user: root` also prevents the worker from fixing the permissions
+    # on the mounted folders, so when removing this make sure the folders have the correct UID/GID
+    # (1000:1000 by default)
+    user: root
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+      - /data/docker/authentik/media:/media
+      - /data/docker/authentik/certs:/certs
+      - /data/docker/authentik/custom-templates:/templates
+    env_file:
+      - .env
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
