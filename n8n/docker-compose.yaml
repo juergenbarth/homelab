@@ -1,0 +1,66 @@
+---
+services:
+  n8n-postgres:
+    container_name: n8n-postgres-prod-1
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - POSTGRES_NON_ROOT_USER
+      - POSTGRES_NON_ROOT_PASSWORD
+    volumes:
+      - /data/docker/n8n/pgdata:/var/lib/postgresql/data
+      - /data/docker/n8n/init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - backend
+  n8n:
+    container_name: n8n-prod-1
+    image: n8nio/n8n:1.38.1
+    user: root
+    restart: unless-stopped
+    # ports:
+    #   - 5678:5678
+    volumes:
+      - /data/docker/n8n/data:/home/node/.n8n
+      - /data/files:/data/files
+    env_file:
+      - .env
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=n8n-postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.n8n-prod-1-http.entrypoints=web
+      - traefik.http.routers.n8n-prod-1-http.rule=Host(`n8n.navigio.io`)
+      - traefik.http.routers.n8n-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.n8n-prod-1-https.rule=Host(`n8n.navigio.io`)
+      - traefik.http.routers.n8n-prod-1-https.tls=true
+      - traefik.http.routers.n8n-prod-1-https.tls.certresolver=route53
+    links:
+      - n8n-postgres
+    depends_on:
+      n8n-postgres:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
