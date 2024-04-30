@@ -8,4 +8,4 @@ If you are looking for detailed instructions for this kind of topic, head over t
 
 Contributing
 ============
-Since these are my personal files, I am not accepting any contributions. You can fork or this repository and use it as a template for your own endeavors.
+Since these are my personal files, I am not accepting any contributions. You can fork this repository and use it as a template for your own endeavors.
