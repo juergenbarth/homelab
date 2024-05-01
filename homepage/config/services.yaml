@@ -1,0 +1,125 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/latest/configs/services
+
+- Network:
+    - unifi:
+        icon: unifi.png
+        href: https://udmp.navigio.io
+        description: Unifi Network Application
+        widget:
+          type: unifi
+          url: https://udmp.navigio.io
+          username: {{HOMEPAGE_VAR_UNIFI_USER}}
+          password: {{HOMEPAGE_VAR_UNIFI_PASSWORD}}
+          fields: ["lan", "wlan", "lan_devices", "wlan_devices"]
+    - OPNsense:
+        icon: opnsense.png
+        href: https://fw.navigio.io
+        description: https://192.168.0.1
+        widget:
+          type: opnsense
+          url: https://fw.navigio.io
+          username: {{HOMEPAGE_VAR_OPNSENSE_KEY}}
+          password: {{HOMEPAGE_VAR_OPNSENSE_SECRET}}
+          fields: ["cpu", "memory", "wanUpload", "wanDownload"]
+    - Pi-Hole 1:
+        icon: pi-hole.png
+        href: http://192.168.0.5/admin
+        description: pihole 1 Prod on bef02
+        container: pihole
+        widget:
+            type: pihole
+            url: http://192.168.0.5
+            key: 
+    - Pi-Hole 2:
+        icon: pi-hole.png
+        href: http://192.168.200.9/admin
+        description: pihole 2 Prod on ns
+        container: pihole
+        widget:
+            type: pihole
+            url: http://192.168.200.9
+            key: 
+
+- Monitoring:
+    - Uptime Kuma:
+        icon: uptime-kuma.png
+        href: https://uptimekuma.navigio.io
+        description: uptime kuma prod on bef03
+        widget:
+            type: uptimekuma
+            url: https://uptimekuma.navigio.io
+            slug: main
+
+- Infrastructure:
+    - NewStation:
+       icon: synology-dsm.png
+       href: https://ns.navigio.io:5001
+       description: https://192.168.0.248:5001
+    - Woodpecker:
+       icon: synology-dsm.png
+       href: https://woodpecker.navigio.io:5001
+       description: https://192.168.0.10:5001
+    - Portainer (NewStation):
+        icon: portainer.png
+        href: https://portainer-local.navigio.io
+        description: Portainer Demo on 192.168.0.248
+    - Portainer (Woodpecker):
+        icon: portainer.png
+        href: https://portainer-demo.navigio.io
+        description: Portainer Demo on 192.168.0.10
+
+- Automation:
+    - n8n:
+        icon: n8n.png
+        href: https://n8n.navigio.io
+        description: n8n Prod on bef03
+        server: local-docker
+        container: n8n-prod-1
+
+- Security:
+    - Authentik:
+        icon: authentik.png
+        href: https://authentik.navigio.io
+        description: Authentik Prod on bef03
+        widget:
+            type: authentik
+            url: https://authentik.navigio.io
+            key: {{HOMEPAGE_VAR_AUTHENTIK_KEY}}
+    - Vaultwarden:
+        icon: vaultwarden.png
+        href: https://vaultwarden.navigio.io
+        description: vaultwarden prod on bef03
+
+- Applications:
+    - InvoiceNinja:
+        icon: invoiceninja-light.png
+        href: https://invoiceninja.navigio.io
+        description: InvoiceNinja Prod on bef03
+        server: local-docker
+        container: invoiceninja-app-prod-1
+    - Paperless-ngx:
+        icon: paperless.png
+        href: https://paperlessngx.navigio.io
+        description: paperless-ngx on bef03
+        server: local-docker
+        container: paperlessngx-prod-1
+        widget:
+            type: paperlessngx
+            url: https://paperlessngx.navigio.io
+            key: 
+    - TimeTagger:
+        icon: timetagger.png
+        href: https://timetagger.navigio.io
+        description: timetagger prod on bef03
+        server: local-docker
+        container: timetagger-prod-1
+
+- Smarthome:
+    - Home Assistant:
+        icon: si-homeassistant-#18BCF2
+        # href: http://192.168.0.66:8123
+        href: https://homeassistant.navigio.io
+        description: HA on bef01
+        container: homeassistant
