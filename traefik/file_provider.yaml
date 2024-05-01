@@ -5,9 +5,18 @@ http:
             tls:
                 certResolver: route53
             service: firewall
+        to-homeassistant:
+            rule: "Host(`homeassistant.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: homeassistant-prod-1
 
     services:
         firewall:
             loadBalancer:
                 servers:
                 - url: https://192.168.0.1:8443
+        homeassistant-prod-1:
+            loadbalancer:
+                servers:
+                - url: http://192.168.0.66:8123
