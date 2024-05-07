@@ -1,0 +1,59 @@
+---
+services:
+  headscale:
+    image: headscale/headscale:0.22.3
+    restart: unless-stopped
+    container_name: headscale-demo-1
+    # ports:
+    #   - "0.0.0.0:8080:8080"
+    #   - "0.0.0.0:9090:9090"
+    volumes:
+      # pls change [config_path] to the fullpath of the config folder just created
+      - /data/docker/headscale:/etc/headscale
+      - /data/docker/headscale/lib:/var/lib/headscale
+    command: headscale serve
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.headscale-demo-1-http.entrypoints=web
+      - traefik.http.routers.headscale-demo-1-http.rule=Host(`headscale-demo.navigio.io`)
+      - traefik.http.routers.headscale-demo-1-https.entrypoints=websecure
+      - traefik.http.routers.headscale-demo-1-https.rule=Host(`headscale-demo.navigio.io`)
+      - traefik.http.routers.headscale-demo-1-https.tls.certresolver=route53
+      - traefik.http.routers.headscale-demo-1-https.service=headscale-demo-1
+      - traefik.http.services.headscale-demo-1.loadbalancer.server.port=8080
+      - traefik.http.services.headscale-demo-1.loadbalancer.server.scheme=http
+      - traefik.udp.services.headscale-udp-41641.loadbalancer.server.port=41641
+      - traefik.udp.services.headscale-udp-3478.loadbalancer.server.port=3478
+      # Configure CORS middleware if needed
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolallowmethods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolallowcredentials=true
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolalloworiginlist=*  # Add other origins if needed
+      - traefik.http.middlewares.headscale-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.headscale-cors.headers.addvaryheader=true
+      - traefik.http.routers.headscale-demo-1-https.middlewares=headscale-cors
+    networks:
+      - backend
+
+  headscale-admin:
+    image: goodieshq/headscale-admin:latest
+    container_name: headscale-admin-demo-1
+    # ports:
+    #   - 8888:80
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.headscale-admin-demo-1-http.entrypoints=web
+      - traefik.http.routers.headscale-admin-demo-1-http.rule=Host(`headscale-admin-demo-1.navigio.io`) && PathPrefix(`/admin`)
+      - traefik.http.routers.headscale-admin-demo-1-https.entrypoints=websecure
+      - traefik.http.routers.headscale-admin-demo-1-https.rule=Host(`headscale-admin-demo-1.navigio.io`) && PathPrefix(`/admin`)
+      - traefik.http.routers.headscale-admin-demo-1-https.tls.certresolver=route53
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
