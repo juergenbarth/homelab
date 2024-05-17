@@ -40,7 +40,6 @@ providers:
     exposedByDefault: false
     endpoint: 'unix:///var/run/docker.sock'
     watch: true
-    swarmMode: false
   file:
     directory: /etc/traefik/conf/
     watch: true
