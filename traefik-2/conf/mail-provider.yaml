@@ -1,0 +1,47 @@
+tcp:
+  routers:
+    to-smtp:
+      entryPoints:
+        - "smtp"
+      rule: "HostSNI(`*`)"
+      service: smtp
+    to-smtp-tls:
+      entryPoints:
+        - "smtp-tls"
+      rule: "HostSNI(`*`)"
+      service: smtp-tls
+      tls:
+        passthrough: true
+    to-smtp-starttls:
+      entryPoints:
+        - "smtp-starttls"
+      rule: "HostSNI(`*`)"
+      service: smtp-starttls
+      tls:
+        passthrough: true
+    to-imap-ssl:
+      entryPoints:
+        - "imap-ssl"
+      rule: "HostSNI(`*`)"
+      service: imap-ssl
+      tls:
+        passthrough: true
+
+  services:
+    smtp:
+      loadBalancer:
+        servers:
+          - address: "[aaaa:bbbb:cccc:b900::248]:2525"
+    smtp-tls:
+      loadBalancer:
+        servers:
+          - address: "[aaaa:bbbb:cccc:b900::248]:465"
+    smtp-starttls:
+      loadBalancer:
+        servers:
+          - address: "[aaaa:bbbb:cccc:b900::248]:587"
+    imap-ssl:
+      loadBalancer:
+        servers:
+          - address: "[aaaa:bbbb:cccc:b900::248]:993"
+
