@@ -1,0 +1,36 @@
+http:
+    routers:
+        to-mail:
+            entryPoints:
+                - "web"
+                - "websecure"
+            rule: "Host(`abc.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: mail
+        to-vaultwarden:
+            entryPoints:
+                - "web"
+                - "websecure"
+            rule: "Host(`def.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: vaultwarden
+        to-buchung:
+            entryPoints:
+                - "web"
+                - "websecure"
+            rule: "Host(`ghi.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: proxy-prod-1
+
+    services:
+        mail:
+            loadBalancer:
+                servers:
+                - url: https://[2001:db8::248]:443
+        proxy-prod-1:
+            loadBalancer:
+                servers:
+                - url: https://[2001:db8::7]:443
