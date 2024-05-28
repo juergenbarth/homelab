@@ -1,0 +1,49 @@
+---
+services:
+  db:
+    image: postgres:16
+    container_name: calcom-db-prod-1
+    hostname: calcom-db-prod-1
+    healthcheck: # https://github.com/peter-evans/docker-compose-healthcheck
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - /data/docker/calcom/dbdata:/var/lib/postgresql/data
+    restart: on-failure:5
+    env_file:
+      - stack.env
+    networks:
+      - backend
+
+  calcom:
+    image: calcom/cal.com:latest
+    container_name: calcom-prod-1
+    hostname: calcom-prod-1
+    healthcheck:
+      test: curl -sf http://localhost:3000 || exit 1
+    # ports:
+    #   - 3000:3000
+    restart: on-failure:5
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - stack.env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.calcom-prod-1-http.entrypoints=web
+      - traefik.http.routers.calcom-prod-1-http.rule=Host(`buchung.navigio.io`)
+      - traefik.http.routers.calcom-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.calcom-prod-1-https.rule=Host(`buchung.navigio.io`)
+      - traefik.http.routers.calcom-prod-1-https.tls.certresolver=route53
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend: 
+    external: true
+  backend: 
+    external: true
