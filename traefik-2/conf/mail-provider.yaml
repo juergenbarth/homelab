@@ -31,17 +31,17 @@ tcp:
     smtp:
       loadBalancer:
         servers:
-          - address: "[aaaa:bbbb:cccc:b900::248]:2525"
+          - address: "[2001:db8::248]:2525"
     smtp-tls:
       loadBalancer:
         servers:
-          - address: "[aaaa:bbbb:cccc:b900::248]:465"
+          - address: "[2001:db8::248]:465"
     smtp-starttls:
       loadBalancer:
         servers:
-          - address: "[aaaa:bbbb:cccc:b900::248]:587"
+          - address: "[2001:db8::248]:587"
     imap-ssl:
       loadBalancer:
         servers:
-          - address: "[aaaa:bbbb:cccc:b900::248]:993"
+          - address: "[2001:db8::248]:993"
 
