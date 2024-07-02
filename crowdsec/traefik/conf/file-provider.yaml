@@ -1,0 +1,28 @@
+http:
+    middlewares:
+        crowdsec-bouncer:
+            forwardauth:
+                address: http://bouncer-traefik:8080/api/v1/forwardAuth
+                trustForwardHeader: true
+
+    routers:
+        to-firewall:
+            rule: "Host(`yzx.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: firewall
+        to-homeassistant:
+            rule: "Host(`asdf.navigio.io`)"
+            tls:
+                certResolver: route53
+            service: homeassistant-prod-1
+
+    services:
+        firewall:
+            loadBalancer:
+                servers:
+                - url: https://192.168.0.1:8443
+        homeassistant-prod-1:
+            loadbalancer:
+                servers:
+                - url: http://192.168.0.66:8123
