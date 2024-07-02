@@ -1,0 +1,33 @@
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
+    
+services:
+  traefik:
+    container_name: traefik-prod-1
+    # image: traefik:2.11.2
+    image: traefik:3.0.3
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+      - 8082:8082
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/docker/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - /data/docker/traefik/conf/:/etc/traefik/conf/
+      - /data/docker/traefik/certs/:/etc/traefik/certs/
+      - /data/docker/traefik/logs/:/var/log/traefik
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+      - AWS_HOSTED_ZONE_ID
+    labels:
+      - diun.enable=true
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
