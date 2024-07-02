@@ -1,0 +1,68 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+log:
+  level: INFO
+  filePath: /var/log/traefik/traefik.log
+accessLog:
+  filePath: /var/log/traefik/access.log
+
+api:
+  dashboard: true
+  insecure: true
+  debug: false
+
+entryPoints:
+  web:
+    address: :80
+    http:
+      middlewares:
+        - crowdsec-bouncer@file
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: :443
+    http:
+      middlewares:
+        - crowdsec-bouncer@file
+  metrics:
+    address: :8082
+
+metrics:
+  prometheus:
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    entryPoint: metrics
+
+certificatesResolvers:
+  route53:
+    acme:
+      email: address@email.com
+      storage: /etc/traefik/certs/route53-acme.json
+      dnsChallenge:
+        provider: route53
+        resolvers:
+          - "1.1.1.1:53"
+          - "9.9.9.9:53"
+
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  docker:
+    exposedByDefault: false
+    endpoint: 'unix:///var/run/docker.sock'
+    watch: true
+    # swarmMode: false
+  file:
+    directory: /etc/traefik/conf/
+    watch: true
