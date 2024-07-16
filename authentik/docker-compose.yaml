@@ -37,7 +37,7 @@ services:
       - backend
 
   server:
-    image: ghcr.io/goauthentik/server:2024.2.2
+    image: ghcr.io/goauthentik/server:2024.6.1
     container_name: authentik-server-prod-1
     restart: unless-stopped
     command: server
