@@ -49,7 +49,7 @@ services:
     # Not needed when using macvlan or traefik
     # ports:
     #   - 12900:9000
-    #   - 12943:9443
+    #   - 12943:9443 
     labels:
       - traefik.enable=true
       - traefik.http.routers.authentik-prod-1-http.entrypoints=web
