@@ -22,7 +22,7 @@ services:
       - backend
 
   webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.11.0
     container_name: paperlessngx-prod-1
     restart: always
     depends_on:
