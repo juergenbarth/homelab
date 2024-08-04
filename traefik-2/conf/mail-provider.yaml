@@ -3,26 +3,27 @@ tcp:
     to-smtp:
       entryPoints:
         - "smtp"
-      rule: "HostSNI(`*`)"
+      rule: "HostSNI(`*`)" # FQDN here!
       service: smtp
     to-smtp-tls:
       entryPoints:
         - "smtp-tls"
-      rule: "HostSNI(`*`)"
+      rule: "HostSNI(`*`)" # FQDN here!
       service: smtp-tls
       tls:
         passthrough: true
     to-smtp-starttls:
       entryPoints:
         - "smtp-starttls"
-      rule: "HostSNI(`*`)"
+      rule: "HostSNI(`*`)" # FQDN here!
       service: smtp-starttls
       tls:
-        passthrough: true
+        # passthrough: true
+        certResolver: route53
     to-imap-ssl:
       entryPoints:
         - "imap-ssl"
-      rule: "HostSNI(`*`)"
+      rule: "HostSNI(`*`)" # FQDN here!
       service: imap-ssl
       tls:
         passthrough: true
