@@ -22,7 +22,7 @@ services:
       - backend
 
   webserver:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.11.0
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.13.4
     container_name: paperlessngx-prod-1
     restart: always
     depends_on:
@@ -43,6 +43,10 @@ services:
       PUID: 1000
       PGID: 1000
       PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_DBPORT: 5432
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: paperless
       # PAPERLESS_ADMIN_USER: admin
       # PAPERLESS_ADMIN_PASSWORD: GEHEIM
       PAPERLESS_TIKA_ENABLED: 1
