@@ -1,7 +1,7 @@
 ---
 services:
   headscale:
-    image: headscale/headscale:0.22.3
+    image: headscale/headscale:0.23.0
     restart: unless-stopped
     container_name: headscale-prod-1
     # ports:
@@ -9,9 +9,10 @@ services:
     #   - "0.0.0.0:9090:9090"
     volumes:
       # pls change [config_path] to the fullpath of the config folder just created
-      - /data/docker/headscale:/etc/headscale
+      - /data/docker/headscale/etc:/etc/headscale
+      - /data/docker/headscale/acl:/etc/headscale/acl
       - /data/docker/headscale/lib:/var/lib/headscale
-    command: headscale serve
+    command: serve
     labels:
       - traefik.enable=true
       - traefik.http.routers.headscale-prod-1-http.entrypoints=web
@@ -35,24 +36,34 @@ services:
     networks:
       - proxy
 
-  headscale-admin:
-    image: goodieshq/headscale-admin:latest
-    container_name: headscale-admin-prod-1
+  headplane:
+    image: ghcr.io/tale/headplane:0.3.9
+    container_name: headplane-prod-1
     # ports:
     #   - 8888:80
     restart: unless-stopped
+    volumes:
+      - /data/docker/headscale/etc:/etc/headscale
+      - /data/docker/headscale/acl:/etc/headscale/acl
+      - /data/docker/headscale/lib:/var/lib/headscale
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      COOKIE_SECRET: '9H588YKN3q6RaCL9AUODgy1G8GWm8sEv'
+      HEADSCALE_URL: https://headscale-prod-1.navigio.io
+      HEADSCALE_INTEGRATION: 'docker'
+      HEADSCALE_CONTAINER: 'headscale-prod-1'
+      DISABLE_API_KEY_LOGIN: 'true'
+      HOST: '0.0.0.0'
+      PORT: '3000'
+      COOKIE_SECURE: 'false'
+      ROOT_API_KEY: WsgPa01Nmg.rQ_F6lKUGTk8ZmJ7MWIazHSSfbUXZMqJx8YWzt_lLR4
     labels:
       - traefik.enable=true
-      - traefik.http.routers.headscale-admin-prod-1-http.entrypoints=web
-      - traefik.http.routers.headscale-admin-prod-1-http.rule=Host(`headscale-prod-1.navigio.io`) && PathPrefix(`/admin`)
-      - traefik.http.routers.headscale-admin-prod-1-https.entrypoints=websecure
-      - traefik.http.routers.headscale-admin-prod-1-https.rule=Host(`headscale-prod-1.navigio.io`) && PathPrefix(`/admin`)
-      - traefik.http.routers.headscale-admin-prod-1-https.tls.certresolver=route53
-      # Configure BasicAuth to protect the admin gui
-      # Command to create a user: htpasswd -nb user password >> /data/docker/traefik/users/users.txt
-      - traefik.http.routers.headscale-admin-prod-1-https.middlewares=headscale-admin-prod-1-auth
-      - traefik.http.middlewares.headscale-admin-prod-1-auth.basicauth.usersfile=/etc/traefik/users/users.txt
-      - traefik.http.middlewares.headscale-admin-prod-1-auth.basicauth.realm=Headscale
+      - traefik.http.routers.headplane-prod-1-http.entrypoints=web
+      - traefik.http.routers.headplane-prod-1-http.rule=Host(`headscale-prod-1.navigio.io`) && PathPrefix(`/admin`)
+      - traefik.http.routers.headplane-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.headplane-prod-1-https.rule=Host(`headscale-prod-1.navigio.io`) && PathPrefix(`/admin`)
+      - traefik.http.routers.headplane-prod-1-https.tls.certresolver=route53
     networks:
       - proxy
 
