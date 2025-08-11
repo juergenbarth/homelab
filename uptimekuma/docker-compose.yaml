@@ -2,11 +2,15 @@ services:
   uptime-kuma:
     container_name: uptimekuma-prod-1
     image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    extra_hosts:
+      - "buchung.navigio.io:172.17.0.1"
     volumes:
       #- ./data:/app/data
-      - /data/docker/uptimekuma/data:/app/data
+      - /volume2/docker/uptimekuma/data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
+      - diun.enable=true
       - traefik.enable=true
       - traefik.http.routers.uptimekuma-prod-1-http.entrypoints=web
       - traefik.http.routers.uptimekuma-prod-1-http.rule=Host(`uptimekuma.navigio.io`)
@@ -17,9 +21,12 @@ services:
     networks:
       - frontend
       - backend
+      - dns-net
 
 networks:
   frontend:
     external: true
   backend:
+    external: true
+  dns-net:
     external: true
