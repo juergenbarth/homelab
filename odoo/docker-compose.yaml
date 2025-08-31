@@ -1,0 +1,54 @@
+services:
+  web:
+    image: odoo:18
+    container_name: odoo-prod-1
+    restart: unless-stopped
+    extra_hosts:
+      - "n8n.navigio.io:172.17.0.1"
+    depends_on:
+      - odoodb
+    ports:
+      - "8089:8069"
+    volumes:
+      - /volume2/docker/odoo/web-data:/var/lib/odoo
+      - /volume2/docker/odoo/config:/etc/odoo
+      - /volume2/docker/odoo/addons:/mnt/extra-addons
+    environment:
+      - HOST=odoodb
+      - USER=odoo
+      - PASSWORD=myodoo
+    labels:
+      - diun.enable=true
+      - traefik.enable=true
+      - traefik.http.routers.odoo-prod-1-http.entrypoints=web
+      - traefik.http.routers.odoo-prod-1-http.rule=Host(`odoo-prod.navigio.io`) || Host(`odoo-prod.jklp.io`)
+      - traefik.http.routers.odoo-prod-1-https.entrypoints=websecure
+      - traefik.http.routers.odoo-prod-1-https.rule=Host(`odoo-prod.navigio.io`) || Host(`odoo-prod.jklp.io`)
+      - traefik.http.routers.odoo-prod-1-wss.rule=Host(`odoo-prod-1.navigio.io`) || Host(`odoo-prod.jklp.io`)
+      - traefik.http.routers.odoo-prod-1-https.tls.certresolver=route53
+      - traefik.http.routers.odoo-prod-1-https.service=odoo-prod-1
+      - traefik.http.services.odoo-prod-1.loadbalancer.server.port=8069
+    networks:
+      - default
+      - backend
+
+  odoodb:
+    image: postgres:17
+    container_name: odoo-db-prod-1
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=myodoo
+      - POSTGRES_USER=odoo
+    volumes:
+      - /volume2/docker/odoo/db-data:/var/lib/postgresql/data
+    networks:
+      - default
+
+networks:
+  default:
+    name: odoo-net
+    external: true
+  backend:
+    name: backend
+    external: true
