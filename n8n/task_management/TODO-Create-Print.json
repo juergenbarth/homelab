@@ -1,0 +1,245 @@
+{
+  "name": "TODO-Create-Print",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "TODO",
+        "formDescription": "Enter the parameters for the new TODO item.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Text",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Priority",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "High"
+                  },
+                  {
+                    "option": "Normal"
+                  },
+                  {
+                    "option": "Low"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Due date",
+              "fieldType": "date",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "redirect",
+              "redirectUrl": "https://n8n.navigio.io/form/71f80455-47a1-4f4e-bf4b-23ba54d8bf14"
+            }
+          },
+          "ignoreBots": true
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1280,
+        -176
+      ],
+      "id": "ab946759-0153-4d00-a6d8-9a96d8f9956e",
+      "name": "Eingabe",
+      "webhookId": "71f80455-47a1-4f4e-bf4b-23ba54d8bf14"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "docId": "eFp4qFDLj83DToQeeeWGfw",
+        "tableId": "List",
+        "fieldsToSend": {
+          "properties": [
+            {
+              "fieldId": "Short_Text",
+              "fieldValue": "={{ $json['Text'] }}"
+            },
+            {
+              "fieldId": "Priority",
+              "fieldValue": "={{ $json.Priority }}"
+            },
+            {
+              "fieldId": "Due_Date",
+              "fieldValue": "={{ $json['Due date'] }}"
+            },
+            {
+              "fieldId": "Title",
+              "fieldValue": "={{ $json.Title }}"
+            },
+            {
+              "fieldId": "Status",
+              "fieldValue": "Todo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.grist",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        -176
+      ],
+      "id": "6bece963-a3cc-4093-8083-9f16b5a45b80",
+      "name": "Create Single Record",
+      "credentials": {
+        "gristApi": {
+          "id": "kVtWZeIU5Hp4hBTa",
+          "name": "Grist Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec6de92b-2bab-4c03-a865-23fdadb1b74d",
+              "name": "printer_ip",
+              "value": "192.168.0.114",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -832,
+        -176
+      ],
+      "id": "d62b5102-02a7-4570-9914-7b596de41ecb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "command": "apk add -u python3 py3-pip\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -176
+      ],
+      "id": "c85de7ee-c34d-4dca-8a8a-85ecfb231282",
+      "name": "Installiere Python"
+    },
+    {
+      "parameters": {
+        "command": "python3 -m venv /todo\ncp -v /todo/print_todo.py /todo/bin\nsource /todo/bin/activate\npip install --upgrade pip\npip install --upgrade pillow pyserial pyusb qrcode python-escpos"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -176
+      ],
+      "id": "b5357159-f259-459b-aa29-9bf9b4108594",
+      "name": "Erzeuge Umgebung"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=source /todo/bin/activate\nprint_todo.py \"{{ $('Edit Fields').item.json.printer_ip }}\" \"{{ $('Eingabe').item.json.Title }}\" \"{{ $('Eingabe').item.json.Text.replaceAll('\\n','<br>') }}\" \"Priority: {{ $('Eingabe').item.json.Priority }}\" \"Due: {{ $('Eingabe').item.json[\"Due date\"] }}\" \"Added: {{ $('Eingabe').item.json.submittedAt.toDateTime().format('yyyy-MM-dd') }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -176
+      ],
+      "id": "0eb03431-bed1-40bc-84e1-de8aa969335d",
+      "name": "Execute Command"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Eingabe": {
+      "main": [
+        [
+          {
+            "node": "Create Single Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Single Record": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Installiere Python": {
+      "main": [
+        [
+          {
+            "node": "Erzeuge Umgebung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Installiere Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Erzeuge Umgebung": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "1250fa18-c829-4689-b4f7-46731ff0bec6",
+  "meta": {
+    "instanceId": "5ef3aa23d634f699c9079a70cd4441e326aae8e126f2d1d9e4239feb0fcbda63"
+  },
+  "id": "EtSJMvPwyShhgZk1",
+  "tags": []
+}
