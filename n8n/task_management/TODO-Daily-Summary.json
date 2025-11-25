@@ -1,0 +1,375 @@
+{
+  "name": "TODO-Daily-Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "apk add -u python3 py3-pip fortune\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -736
+      ],
+      "id": "3466b8b7-1315-411e-9812-0cb7de263ac1",
+      "name": "Installiere Python"
+    },
+    {
+      "parameters": {
+        "command": "python3 -m venv /todo\ncp -v /todo/print_today_task_list.py /todo/bin\nsource /todo/bin/activate\npip install --upgrade pip\npip install --upgrade pillow pyserial pyusb qrcode python-escpos"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -736
+      ],
+      "id": "7d1f0baf-8d15-4693-94ec-e9db9b721a44",
+      "name": "Erzeuge Umgebung"
+    },
+    {
+      "parameters": {
+        "url": "http://grist-prod-1:8484/api/docs/eFp4qFDLj83DToQeeeWGfw/tables/List/records?filter={\"Due\": [\"OVERDUE\"]}&sort=-Due_Date",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        -736
+      ],
+      "id": "600e8273-209f-4893-848d-aee3d120ea05",
+      "name": "Get Records",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "U4JcMmbh4HqkxyZl",
+          "name": "Grist Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "=source /todo/bin/activate\nprint_today_task_list.py \"{{ $('Edit Fields').item.json.printer_ip }}\" \"{{ $('Edit Fields').item.json.Header }}<br>{{ $('Edit Fields').item.json.Subheader }}<br>{{ $('Edit Fields').item.json.Workday }}\" \"Weather<br>Temperature: {{ $('HTTP Request').item.json.current.temperature_2m }}°C<br>Wind: {{ $('HTTP Request').item.json.current.wind_speed_10m }}km/h\" \"Aufgaben<br>{{ $('Aggregate').item.json.Title }}\" \"{{ $json.stdout.replaceAll('\\n','<br>') }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        -736
+      ],
+      "id": "28f162f6-60ce-4552-86b8-cd599924ab6f",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "records",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -736
+      ],
+      "id": "421eac1a-bd37-481c-93cf-6262a60a59c9",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec6de92b-2bab-4c03-a865-23fdadb1b74d",
+              "name": "printer_ip",
+              "value": "192.168.0.114",
+              "type": "string"
+            },
+            {
+              "id": "05bc697e-6bb9-46b9-a5a1-cfb90a4aa1b6",
+              "name": "Header",
+              "value": "Worklist",
+              "type": "string"
+            },
+            {
+              "id": "4ffaf48d-6e3e-4ba1-a727-3e4f75332d9d",
+              "name": "Subheader",
+              "value": "for",
+              "type": "string"
+            },
+            {
+              "id": "6d43ca13-1e3d-4a48-bcb3-3e66e11d9a4f",
+              "name": "Workday",
+              "value": "={{ $now.format('yyyy-MM-dd') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -736
+      ],
+      "id": "ba4c2a6e-e7fb-43e1-8294-b63e2da5b6e3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -640
+      ],
+      "id": "0fc237f5-1069-42de-bee8-a8613f4cc53a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "fields.Title"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -736
+      ],
+      "id": "d0ff9f78-a3be-4c17-95f5-18f2070c2708",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f8120e6f-e444-442d-b984-20be10def35f",
+              "name": "fields.Title",
+              "value": "={{ $json.fields.Title + \"<br>\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        -736
+      ],
+      "id": "37acb032-689d-443b-958d-4412b33ef797",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -832
+      ],
+      "id": "e3dfc24e-f538-4e13-a02b-90f9a52387d1",
+      "name": "Every Day at 6am"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=48.6386677&longitude=-1.1496978&current=temperature_2m,wind_speed_10m",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        -736
+      ],
+      "id": "7662681d-53d4-4f8c-935b-74d37587eed9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "command": "fortune -a"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        -736
+      ],
+      "id": "77115d45-21a3-4ab9-ba98-c4efccb788dc",
+      "name": "Execute Command1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Installiere Python": {
+      "main": [
+        [
+          {
+            "node": "Erzeuge Umgebung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Erzeuge Umgebung": {
+      "main": [
+        [
+          {
+            "node": "Get Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Records": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Day at 6am": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Installiere Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "62589874-5f41-4588-8c8d-72d4b8c3e59c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ef3aa23d634f699c9079a70cd4441e326aae8e126f2d1d9e4239feb0fcbda63"
+  },
+  "id": "woquTBtup7UdWvcf",
+  "tags": []
+}
