@@ -61,7 +61,7 @@
     {
       "parameters": {
         "executeOnce": false,
-        "command": "=source /todo/bin/activate\nprint_today_task_list.py \"{{ $('Edit Fields').item.json.printer_ip }}\" \"{{ $('Edit Fields').item.json.Header }}<br>{{ $('Edit Fields').item.json.Subheader }}<br>{{ $('Edit Fields').item.json.Workday }}\" \"Weather<br>Temperature: {{ $('HTTP Request').item.json.current.temperature_2m }}°C<br>Wind: {{ $('HTTP Request').item.json.current.wind_speed_10m }}km/h\" \"Aufgaben<br>{{ $('Aggregate').item.json.Title }}\" \"{{ $json.stdout.replaceAll('\\n','<br>') }}\""
+        "command": "=source /todo/bin/activate\nprint_today_task_list.py \"{{ $('Edit Fields').item.json.printer_ip }}\" \"{{ $('Edit Fields').item.json.Header }}<br>{{ $('Edit Fields').item.json.Subheader }}<br>{{ $('Edit Fields').item.json.Workday }}\" \"Weather<br>Temperature: {{ $('HTTP Request').item.json.current.temperature_2m }} °C<br>Rain: {{ $('HTTP Request').item.json.current.rain }} mm<br>Wind: {{ $('HTTP Request').item.json.current.wind_speed_10m }} km/h\" \"Tasks:<br>{{ $('Aggregate').item.json.Title }}\" \"{{ $json.stdout.replaceAll('\\n','<br>').replaceAll('\"','') }}\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -203,7 +203,7 @@
     },
     {
       "parameters": {
-        "url": "https://api.open-meteo.com/v1/forecast?latitude=48.6386677&longitude=-1.1496978&current=temperature_2m,wind_speed_10m",
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=48.6386677&longitude=-1.1496978&current=temperature_2m,rain,wind_speed_10m",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -217,7 +217,7 @@
     },
     {
       "parameters": {
-        "command": "fortune -a"
+        "command": "echo \"Today is a great day!\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -363,9 +363,10 @@
     "executionOrder": "v1",
     "saveDataSuccessExecution": "none",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
   },
-  "versionId": "62589874-5f41-4588-8c8d-72d4b8c3e59c",
+  "versionId": "5c36bf47-0c47-4fa2-9302-6902f9eb495d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5ef3aa23d634f699c9079a70cd4441e326aae8e126f2d1d9e4239feb0fcbda63"
